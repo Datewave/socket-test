@@ -7,20 +7,16 @@ export const peerConfig = {
     iceServers: [
         { 
             urls: [
-                'stun:takemate.api.datewave.in:3478',
                 'stun:stun.l.google.com:19302',
                 'stun:stun1.l.google.com:19302'
             ]
         },
         {
-            // Primary TURN over UDP
-            urls: 'turn:takemate.api.datewave.in:3478',
-            username: 'takemate',
-            credential: 'S6qZ-9uYbP3!rX2eV4mN'
-        },
-        {
-            // Fallback TURN over TLS for strict networks
-            urls: 'turns:takemate.api.datewave.in:5349',
+            urls: [
+                'turn:takemate.api.datewave.in:3478?transport=udp',
+                'turn:takemate.api.datewave.in:3478?transport=tcp',
+                'turns:takemate.api.datewave.in:5349?transport=tcp'
+            ],
             username: 'takemate',
             credential: 'S6qZ-9uYbP3!rX2eV4mN'
         }

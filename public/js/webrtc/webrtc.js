@@ -39,31 +39,92 @@ export async function initializeMedia() {
             await Notification.requestPermission();
         }
 
+        console.log('🔵 AUDIO DEBUG: Starting media initialization...');
+        
+        // Check available devices first
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioInputs = devices.filter(device => device.kind === 'audioinput');
+        const videoInputs = devices.filter(device => device.kind === 'videoinput');
+        console.log('🔵 Available devices:', {
+            audioInputs: audioInputs.length,
+            videoInputs: videoInputs.length,
+            audioDevices: audioInputs.map(d => ({ label: d.label, deviceId: d.deviceId }))
+        });
+
         // First try to get both video and audio
         try {
             localStream = await navigator.mediaDevices.getUserMedia({
                 video: true,
-                audio: true
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                    sampleRate: 48000
+                }
             });
+            console.log('✅ Got both video and audio streams');
         } catch (e) {
             console.warn('Failed to get both video and audio, trying audio only:', e);
             // If that fails, try audio only
             localStream = await navigator.mediaDevices.getUserMedia({
                 video: false,
-                audio: true
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                    sampleRate: 48000
+                }
             });
             showStatus('Video unavailable - audio only mode', true);
+            console.log('✅ Got audio-only stream');
         }
+        
+        // 🔵 AUDIO DEBUG: Detailed stream analysis
+        console.log('🔵 AUDIO DEBUG: Local stream details:');
+        const audioTracks = localStream.getAudioTracks();
+        const videoTracks = localStream.getVideoTracks();
+        
+        console.log('🎤 Audio tracks:', audioTracks.length);
+        audioTracks.forEach((track, index) => {
+            console.log(`🎤 Audio track ${index}:`, {
+                label: track.label,
+                enabled: track.enabled,
+                muted: track.muted,
+                readyState: track.readyState,
+                kind: track.kind,
+                settings: track.getSettings(),
+                constraints: track.getConstraints()
+            });
+            
+            // Test audio level
+            testAudioLevel(track);
+        });
+        
+        console.log('📹 Video tracks:', videoTracks.length);
+        videoTracks.forEach((track, index) => {
+            console.log(`📹 Video track ${index}:`, {
+                label: track.label,
+                enabled: track.enabled,
+                muted: track.muted,
+                readyState: track.readyState,
+                kind: track.kind
+            });
+        });
         
         document.getElementById('localVideo').srcObject = localStream;
         
-        console.log('🎤 Media initialized:', 
-            'Audio:', localStream.getAudioTracks().length > 0,
-            'Video:', localStream.getVideoTracks().length > 0
+        console.log('✅ Media initialized successfully:', 
+            'Audio tracks:', localStream.getAudioTracks().length,
+            'Video tracks:', localStream.getVideoTracks().length
         );
         return localStream;
     } catch (error) {
-        console.error('Error accessing media devices:', error);
+        console.error('❌ Error accessing media devices:', error);
+        console.error('❌ Error details:', {
+            name: error.name,
+            message: error.message,
+            constraint: error.constraint
+        });
         showStatus('Error accessing camera/microphone. Please check your device permissions.', true);
         throw error;
     }
@@ -90,48 +151,150 @@ export async function createPeerConnection() {
 
     // Add local stream if available
     if (localStream) {
-        localStream.getTracks().forEach(track => {
-            peerConnection.addTrack(track, localStream);
+        console.log('🔵 AUDIO DEBUG: Adding local tracks to peer connection...');
+        localStream.getTracks().forEach((track, index) => {
+            console.log(`🎤 Adding local track ${index}:`, {
+                kind: track.kind,
+                enabled: track.enabled,
+                muted: track.muted,
+                readyState: track.readyState,
+                label: track.label
+            });
+            const sender = peerConnection.addTrack(track, localStream);
+            console.log('📤 Track sender created:', sender);
         });
         console.log('✅ Added local stream to peer connection');
+        
+        // Verify senders were added
+        const senders = peerConnection.getSenders();
+        console.log('🔵 AUDIO DEBUG: Total senders after adding tracks:', senders.length);
+        senders.forEach((sender, index) => {
+            if (sender.track) {
+                console.log(`📤 Sender ${index}:`, {
+                    kind: sender.track.kind,
+                    enabled: sender.track.enabled,
+                    readyState: sender.track.readyState
+                });
+            }
+        });
     } else {
         console.warn('⚠️ No local stream available when creating peer connection');
     }
 
     // Handle incoming stream
     peerConnection.ontrack = (event) => {
-        console.log('🎵 Received remote track:', event.track.kind, 'enabled:', event.track.enabled);
+        console.log('🔵 AUDIO DEBUG: ========== REMOTE TRACK RECEIVED ==========');
+        console.log('🎵 Received remote track:', {
+            kind: event.track.kind,
+            enabled: event.track.enabled,
+            muted: event.track.muted,
+            readyState: event.track.readyState,
+            label: event.track.label,
+            id: event.track.id
+        });
+        
         const remoteVideo = document.getElementById('remoteVideo');
         const remoteStream = event.streams[0];
         
-        // Log stream details
-        console.log('📺 Remote stream tracks:', {
-            audio: remoteStream.getAudioTracks().length,
-            video: remoteStream.getVideoTracks().length
+        // 🔵 AUDIO DEBUG: Detailed stream analysis
+        console.log('🔵 AUDIO DEBUG: Remote stream details:');
+        console.log('📺 Stream ID:', remoteStream.id);
+        console.log('📺 Stream active:', remoteStream.active);
+        
+        const audioTracks = remoteStream.getAudioTracks();
+        const videoTracks = remoteStream.getVideoTracks();
+        
+        console.log('🔊 Remote audio tracks:', audioTracks.length);
+        audioTracks.forEach((track, index) => {
+            console.log(`🔊 Remote audio track ${index}:`, {
+                id: track.id,
+                label: track.label,
+                enabled: track.enabled,
+                muted: track.muted,
+                readyState: track.readyState,
+                kind: track.kind,
+                settings: track.getSettings()
+            });
+            
+            // Monitor track state changes
+            track.addEventListener('ended', () => {
+                console.log('❌ Remote audio track ended:', track.id);
+            });
+            
+            track.addEventListener('mute', () => {
+                console.log('🔇 Remote audio track muted:', track.id);
+            });
+            
+            track.addEventListener('unmute', () => {
+                console.log('🔊 Remote audio track unmuted:', track.id);
+            });
         });
         
+        console.log('📹 Remote video tracks:', videoTracks.length);
+        videoTracks.forEach((track, index) => {
+            console.log(`📹 Remote video track ${index}:`, {
+                id: track.id,
+                label: track.label,
+                enabled: track.enabled,
+                muted: track.muted,
+                readyState: track.readyState,
+                kind: track.kind
+            });
+        });
+        
+        // Set the stream to the video element
         remoteVideo.srcObject = remoteStream;
         
-        // Ensure audio plays by explicitly setting properties
+        // 🔵 AUDIO DEBUG: Ensure audio plays by explicitly setting properties
+        console.log('🔵 AUDIO DEBUG: Setting up remote video element for audio playback...');
         remoteVideo.muted = false;
         remoteVideo.volume = 1.0;
+        remoteVideo.autoplay = true;
+        remoteVideo.playsInline = true;
+        
+        console.log('🔵 AUDIO DEBUG: Remote video element properties:', {
+            muted: remoteVideo.muted,
+            volume: remoteVideo.volume,
+            autoplay: remoteVideo.autoplay,
+            playsInline: remoteVideo.playsInline,
+            hasAudio: audioTracks.length > 0
+        });
         
         // Try to play the remote stream
         remoteVideo.play().then(() => {
             console.log('✅ Remote stream playing successfully');
-            // Check if audio tracks are enabled
-            const audioTracks = remoteStream.getAudioTracks();
-            audioTracks.forEach((track, index) => {
-                console.log(`🔊 Audio track ${index}:`, {
-                    enabled: track.enabled,
-                    muted: track.muted,
-                    readyState: track.readyState
-                });
+            console.log('🔵 AUDIO DEBUG: Video element playing state:', {
+                paused: remoteVideo.paused,
+                currentTime: remoteVideo.currentTime,
+                duration: remoteVideo.duration,
+                volume: remoteVideo.volume,
+                muted: remoteVideo.muted
             });
+            
+            // Test audio level on remote tracks
+            audioTracks.forEach((track, index) => {
+                testAudioLevel(track, `Remote Audio Track ${index}`);
+            });
+            
         }).catch(error => {
-            console.warn('⚠️ Autoplay prevented, user interaction required:', error);
+            console.error('❌ Remote stream autoplay failed:', error);
+            console.error('❌ Error details:', {
+                name: error.name,
+                message: error.message
+            });
             showStatus('Click the remote video to enable audio', true);
+            
+            // Add click handler to enable audio
+            remoteVideo.addEventListener('click', () => {
+                remoteVideo.play().then(() => {
+                    console.log('✅ Remote stream playing after user interaction');
+                }).catch(e => {
+                    console.error('❌ Still failed to play after click:', e);
+                });
+            }, { once: true });
         });
+        
+        console.log('🔵 AUDIO DEBUG: ========== END REMOTE TRACK SETUP ==========');
     };
 
     // Track ICE gathering progress
@@ -147,6 +310,13 @@ export async function createPeerConnection() {
             iceCandidateCount++;
             const candidate = event.candidate;
             
+            // 🔵 AUDIO DEBUG: Log detailed ICE candidate info
+            console.log('🔵 ICE Candidate:', candidate.candidate);
+            console.log('🔵 Candidate Type:', candidate.type, 'Protocol:', candidate.protocol);
+            if (candidate.type === 'relay') {
+                console.log('✅ TURN server is working! (relay candidate found)');
+            }
+            
             const { role: userRole, id: userId } = getUserInfo();
             const targetUserId = userRole === 'USER' ? currentCall.staffUserId : currentCall.userId;
             
@@ -161,7 +331,9 @@ export async function createPeerConnection() {
             // Try to send the candidate
             sendIceCandidate(candidate, targetUserId, priority);
         } else if (!event.candidate) {
-            console.log(`Finished collecting ICE candidates. Total: ${iceCandidateCount}`);
+            console.log(`✅ Finished collecting ICE candidates. Total: ${iceCandidateCount}`);
+            // 🔵 AUDIO DEBUG: Start stats monitoring after ICE gathering
+            startStatsMonitoring();
         }
     };
 
@@ -271,14 +443,38 @@ export async function handleOffer(data) {
         console.log('📝 Setting local description (answer)');
         await peerConnection.setLocalDescription(answer);
         
-        // Debug SDP content
+        // 🔵 AUDIO DEBUG: Detailed SDP analysis
+        console.log('🔵 AUDIO DEBUG: ========== SDP ANALYSIS (ANSWER) ==========');
         console.log('🔍 Answer SDP contains audio:', answer.sdp.includes('m=audio'));
         console.log('🔍 Answer SDP contains video:', answer.sdp.includes('m=video'));
+        
+        // Extract audio codec information
+        const audioLines = answer.sdp.split('\n').filter(line => 
+            line.includes('m=audio') || 
+            line.includes('a=rtpmap') && line.includes('audio') ||
+            line.includes('opus') || 
+            line.includes('PCMU') || 
+            line.includes('PCMA')
+        );
+        console.log('🎵 Audio SDP lines:', audioLines);
+        
         if (answer.sdp.includes('m=audio')) {
-            console.log('🎵 Audio media line found in answer');
+            console.log('✅ Audio media line found in answer');
+            
+            // Check for common audio codecs
+            if (answer.sdp.includes('opus')) {
+                console.log('🎵 Opus codec found in SDP');
+            }
+            if (answer.sdp.includes('PCMU') || answer.sdp.includes('PCMA')) {
+                console.log('🎵 PCM codec found in SDP');
+            }
         } else {
-            console.warn('⚠️ No audio media line in answer SDP!');
+            console.error('❌ No audio media line in answer SDP!');
         }
+        
+        // Log full SDP for debugging (truncated)
+        console.log('📋 Answer SDP (first 500 chars):', answer.sdp.substring(0, 500));
+        console.log('🔵 AUDIO DEBUG: ========== END SDP ANALYSIS ==========');
         
         // Wait for ICE gathering to complete or timeout after 5 seconds
         console.log('⏳ Waiting for ICE gathering...');
@@ -572,14 +768,38 @@ export async function startCall() {
         
         await peerConnection.setLocalDescription(offer);
         
-        // Debug SDP content
+        // 🔵 AUDIO DEBUG: Detailed SDP analysis for offer
+        console.log('🔵 AUDIO DEBUG: ========== SDP ANALYSIS (OFFER) ==========');
         console.log('🔍 Offer SDP contains audio:', offer.sdp.includes('m=audio'));
         console.log('🔍 Offer SDP contains video:', offer.sdp.includes('m=video'));
+        
+        // Extract audio codec information
+        const audioLines = offer.sdp.split('\n').filter(line => 
+            line.includes('m=audio') || 
+            line.includes('a=rtpmap') && line.includes('audio') ||
+            line.includes('opus') || 
+            line.includes('PCMU') || 
+            line.includes('PCMA')
+        );
+        console.log('🎵 Audio SDP lines:', audioLines);
+        
         if (offer.sdp.includes('m=audio')) {
-            console.log('🎵 Audio media line found in offer');
+            console.log('✅ Audio media line found in offer');
+            
+            // Check for common audio codecs
+            if (offer.sdp.includes('opus')) {
+                console.log('🎵 Opus codec found in SDP');
+            }
+            if (offer.sdp.includes('PCMU') || offer.sdp.includes('PCMA')) {
+                console.log('🎵 PCM codec found in SDP');
+            }
         } else {
-            console.warn('⚠️ No audio media line in offer SDP!');
+            console.error('❌ No audio media line in offer SDP!');
         }
+        
+        // Log full SDP for debugging (truncated)
+        console.log('📋 Offer SDP (first 500 chars):', offer.sdp.substring(0, 500));
+        console.log('🔵 AUDIO DEBUG: ========== END SDP ANALYSIS ==========');
         
         // First initiate call through REST API
         const response = await fetch(`${API_BASE_URL}/calls/initiate`, {
@@ -806,18 +1026,132 @@ export function endCall() {
     showCallControls('idle');
 }
 
+// 🔵 AUDIO DEBUG: Test audio level function
+function testAudioLevel(track, trackName = 'Audio Track') {
+    if (track.kind !== 'audio') return;
+    
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const mediaStreamSource = audioContext.createMediaStreamSource(new MediaStream([track]));
+        const analyser = audioContext.createAnalyser();
+        
+        mediaStreamSource.connect(analyser);
+        analyser.fftSize = 256;
+        
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        
+        let checkCount = 0;
+        const maxChecks = 50; // Check for 5 seconds
+        
+        const checkAudioLevel = () => {
+            if (checkCount >= maxChecks) {
+                audioContext.close();
+                return;
+            }
+            
+            analyser.getByteFrequencyData(dataArray);
+            const average = dataArray.reduce((a, b) => a + b) / bufferLength;
+            
+            if (average > 0) {
+                console.log(`🔊 ${trackName} - Audio Level:`, Math.round(average), '/255');
+            } else if (checkCount % 10 === 0) {
+                console.log(`🔇 ${trackName} - No audio detected (level: ${average})`);
+            }
+            
+            checkCount++;
+            setTimeout(checkAudioLevel, 100);
+        };
+        
+        checkAudioLevel();
+    } catch (error) {
+        console.warn(`⚠️ Could not test audio level for ${trackName}:`, error);
+    }
+}
+
+// 🔵 AUDIO DEBUG: WebRTC Stats monitoring
+let statsInterval = null;
+
+function startStatsMonitoring() {
+    if (!peerConnection || statsInterval) return;
+    
+    console.log('🔵 AUDIO DEBUG: Starting WebRTC stats monitoring...');
+    
+    statsInterval = setInterval(async () => {
+        if (!peerConnection || peerConnection.connectionState === 'closed') {
+            clearInterval(statsInterval);
+            statsInterval = null;
+            return;
+        }
+        
+        try {
+            const stats = await peerConnection.getStats();
+            let audioInbound = null;
+            let audioOutbound = null;
+            
+            stats.forEach(report => {
+                if (report.type === 'inbound-rtp' && report.kind === 'audio') {
+                    audioInbound = report;
+                } else if (report.type === 'outbound-rtp' && report.kind === 'audio') {
+                    audioOutbound = report;
+                }
+            });
+            
+            if (audioInbound) {
+                console.log('📥 Inbound Audio Stats:', {
+                    packetsReceived: audioInbound.packetsReceived,
+                    bytesReceived: audioInbound.bytesReceived,
+                    packetsLost: audioInbound.packetsLost,
+                    jitter: audioInbound.jitter,
+                    audioLevel: audioInbound.audioLevel
+                });
+            }
+            
+            if (audioOutbound) {
+                console.log('📤 Outbound Audio Stats:', {
+                    packetsSent: audioOutbound.packetsSent,
+                    bytesSent: audioOutbound.bytesSent,
+                    audioLevel: audioOutbound.audioLevel
+                });
+            }
+            
+            if (!audioInbound && !audioOutbound) {
+                console.log('⚠️ No audio RTP stats found');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error getting WebRTC stats:', error);
+        }
+    }, 5000); // Check every 5 seconds
+}
+
 export function cleanup() {
+    console.log('🔵 AUDIO DEBUG: Cleaning up WebRTC resources...');
+    
+    // Clear stats monitoring
+    if (statsInterval) {
+        clearInterval(statsInterval);
+        statsInterval = null;
+    }
+    
     if (peerConnection) {
+        console.log('🔄 Closing peer connection, final state:', peerConnection.connectionState);
         peerConnection.close();
         peerConnection = null;
     }
 
     if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
+        console.log('🛑 Stopping local stream tracks...');
+        localStream.getTracks().forEach((track, index) => {
+            console.log(`🛑 Stopping ${track.kind} track ${index}:`, track.label);
+            track.stop();
+        });
         localStream = null;
     }
 
     currentCall = null;
     iceCandidateBuffer = [];
     iceCandidateCount = 0;
+    
+    console.log('✅ WebRTC cleanup completed');
 }
