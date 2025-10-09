@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TakeMate WebRTC Test</title>
+    <link rel="stylesheet" href="public/css/webrtc.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Login Section -->
+        <div id="loginSection" class="section">
+            <h2>TakeMate Login</h2>
+            <div>
+                <div id="loginStep">
+                    <select id="userType">
+                        <option value="user">User1 (+919876543210)</option>
+                        <option value="user">User2 (+919876543271)</option>
+                        <option value="staff">Staff1 (+919876543220)</option>
+                        <option value="staff">Staff2 (+919876543221)</option>
+                    </select>
+                    <button id="loginBtn">Login</button>
+                </div>
+            </div>
+            <div id="loginStatus" class="status"></div>
+        </div>
+
+        <!-- Call Section -->
+        <div id="callSection" class="section hidden">
+            <div id="callStatus"></div>
+            
+            <div class="call-info">
+                <div>
+                    <span>Duration: </span>
+                    <span id="callDuration">00:00</span>
+                </div>
+                <div>
+                    <span>Cost: </span>
+                    <span id="callCost">0</span>
+                    <span> coins</span>
+                </div>
+            </div>
+
+            <div class="video-container">
+                <video id="localVideo" autoplay muted playsinline></video>
+                <div class="controls">
+                    <button id="muteBtn">Mute</button>
+                    <button id="videoBtn">Video</button>
+                </div>
+            </div>
+
+            <div class="video-container">
+                <video id="remoteVideo" autoplay playsinline controls></video>
+                <div class="controls" id="callControls">
+                    <div id="staffSelection" class="hidden">
+                        <h3>Available Staff Members</h3>
+                        <div id="staffGrid" class="staff-grid">
+                            <!-- Staff cards will be populated here -->
+                        </div>
+                        <div id="selectedStaffInfo" class="selected-staff-info hidden">
+                            <p>Selected: <span id="selectedStaffName"></span></p>
+                            <p>Rate: <span id="selectedStaffRate"></span></p>
+                            <p>Rating: <span id="selectedStaffRating"></span></p>
+                        </div>
+                    </div>
+                    <button id="startCallBtn">Start Call</button>
+                    <button id="acceptCallBtn" class="hidden">Accept</button>
+                    <button id="rejectCallBtn" class="hidden">Reject</button>
+                    <button id="endCallBtn" class="hidden">End Call</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script type="module">
+        import { handleLogin } from './public/js/webrtc/auth.js';
+        import { initializeSocket } from './public/js/webrtc/socket.js';
+        import { initializeMedia, getLocalStream, startCall, acceptCall, rejectCall, endCall, testAudio } from './public/js/webrtc/webrtc.js';
+        import { toggleMute, toggleVideo } from './public/js/webrtc/ui.js';
+
+        // Add event listeners
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const result = await handleLogin();
+            if (result.success) {
+                await initializeMedia();
+                initializeSocket();
+            }
+        });
+
+        // Media control buttons
+        document.getElementById('muteBtn').addEventListener('click', () => toggleMute(getLocalStream()));
+        document.getElementById('videoBtn').addEventListener('click', () => toggleVideo(getLocalStream()));
+
+        // Call control buttons
+        document.getElementById('startCallBtn').addEventListener('click', startCall);
+        document.getElementById('acceptCallBtn').addEventListener('click', acceptCall);
+        document.getElementById('rejectCallBtn').addEventListener('click', rejectCall);
+        document.getElementById('endCallBtn').addEventListener('click', endCall);
+
+        // Remote video click handler for audio playback
+        document.getElementById('remoteVideo').addEventListener('click', function() {
+            this.play().then(() => {
+                console.log('✅ Remote audio enabled via user interaction');
+            }).catch(error => {
+                console.error('❌ Failed to play remote audio:', error);
+            });
+        });
+
+        // Make testAudio available globally for debugging
+        window.testAudio = testAudio;
+    </script>
+</body>
+</html>
