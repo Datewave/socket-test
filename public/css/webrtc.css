@@ -1,321 +1,972 @@
-/* Base styles */
-body {
-    font-family: Arial, sans-serif;
+/* Modern CSS Reset & Base Styles */
+* {
     margin: 0;
-    padding: 20px;
-    background: #f0f2f5;
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-/* Section styles */
-.section {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.hidden {
-    display: none;
-}
-
-/* Login section */
-#loginSection {
-    max-width: 400px;
-    margin: 40px auto;
-}
-
-/* Call section */
-#callSection {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-/* Video container */
-.video-container {
-    position: relative;
-    background: #000;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-video {
-    width: 100%;
-    height: 100%;
-    min-height: 300px;
-    object-fit: cover;
-}
-
-/* Controls */
-.controls {
-    padding: 10px;
-    background: rgba(0,0,0,0.5);
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-}
-
-/* Button styles */
-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    background: #007bff;
-    color: white;
-    font-weight: bold;
-}
-
-button:hover {
-    background: #0056b3;
-}
-
-button.end-call {
-    background: #dc3545;
-}
-
-button.end-call:hover {
-    background: #c82333;
-}
-
-/* Form elements */
-input {
-    padding: 8px;
-    margin: 5px 0;
-    width: 100%;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 0;
     box-sizing: border-box;
 }
 
-/* Status messages */
-.status {
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 4px;
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #818cf8;
+    --success: #10b981;
+    --success-dark: #059669;
+    --danger: #ef4444;
+    --danger-dark: #dc2626;
+    --warning: #f59e0b;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --radius: 12px;
+    --radius-lg: 16px;
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.error {
-    background: #ffebee;
-    color: #c62828;
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: var(--gray-800);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-.success {
-    background: #e8f5e9;
-    color: #2e7d32;
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
-/* Call status */
-#callStatus {
+/* Section Styles */
+.section {
+    background: white;
+    padding: 32px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-xl);
+    backdrop-filter: blur(10px);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Login Section */
+.login-section {
+    max-width: 480px;
+    margin: 60px auto;
+    text-align: center;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.login-header {
+    margin-bottom: 32px;
+}
+
+.login-header h1 {
+    font-size: 42px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+}
+
+.login-subtitle {
+    color: var(--gray-500);
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.login-content {
+    margin-top: 32px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.login-form label {
+    text-align: left;
+    font-weight: 600;
+    color: var(--gray-700);
+    font-size: 14px;
+}
+
+.user-select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius);
+    font-size: 16px;
+    background: white;
+    color: var(--gray-800);
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: 500;
+}
+
+.user-select:hover {
+    border-color: var(--primary-light);
+}
+
+.user-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Button Styles */
+.btn {
+    padding: 14px 24px;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: var(--shadow);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success) 0%, #34d399 100%);
+    color: white;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, var(--success-dark) 0%, var(--success) 100%);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger) 0%, #f87171 100%);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, var(--danger-dark) 0%, var(--danger) 100%);
+}
+
+.btn-login {
+    width: 100%;
+    padding: 16px;
+    font-size: 16px;
+    margin-top: 8px;
+}
+
+.btn-icon {
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-icon-text {
+    font-size: 18px;
+    margin-right: 6px;
+}
+
+.btn-call {
+    min-width: 140px;
+    padding: 14px 28px;
+    font-size: 16px;
+}
+
+/* Call Section */
+.call-section {
+    animation: fadeIn 0.4s ease-out;
+}
+
+.call-status-bar {
     grid-column: 1 / -1;
     text-align: center;
-    padding: 10px;
-    background: #e3f2fd;
-    border-radius: 4px;
-    margin-bottom: 10px;
+    padding: 16px;
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    font-weight: 600;
+    color: var(--primary-dark);
+    font-size: 15px;
 }
 
-/* Call info */
 .call-info {
     grid-column: 1 / -1;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    background: #f8f9fa;
-    border-radius: 4px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    gap: 24px;
 }
 
-/* Staff selection */
-#staffSelection {
-    margin-bottom: 10px;
-}
-
-#staffSelection label {
-    display: block;
-    margin-bottom: 5px;
-}
-
-#staffList {
-    width: 100%;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-}
-
-/* Call Controls */
-#callControls {
+.call-info-item {
     display: flex;
-    gap: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.call-info-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.call-info-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gray-800);
+}
+
+.call-info-unit {
+    font-size: 14px;
+    color: var(--gray-500);
+    font-weight: 500;
+}
+
+/* Video Grid */
+.video-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.video-container {
+    position: relative;
+    background: var(--gray-900);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    aspect-ratio: 16 / 9;
+    min-height: 400px;
+}
+
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.video-label {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 10;
+}
+
+.local-video {
+    border: 3px solid var(--primary);
+}
+
+.remote-video {
+    border: 3px solid var(--success);
+}
+
+/* Controls */
+.controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.5));
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 12px;
+    z-index: 10;
+    max-height: 90%;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.controls::-webkit-scrollbar {
+    width: 6px;
+}
+
+.controls::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.controls::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.media-controls {
     justify-content: center;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.7);
+    flex-direction: row;
 }
 
-#acceptCallBtn {
-    background: #28a745;
+.call-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
-#acceptCallBtn:hover {
-    background: #218838;
+/* Staff Selection */
+.staff-selection {
+    width: 100%;
+    margin-bottom: 20px;
+    text-align: left;
+    max-height: calc(100% - 80px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-#rejectCallBtn {
-    background: #dc3545;
+.staff-selection-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 16px;
+    text-align: center;
+    flex-shrink: 0;
 }
 
-#rejectCallBtn:hover {
-    background: #c82333;
-}
-
-/* Staff Grid Styles */
 .staff-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 15px;
-    margin: 20px 0;
-    max-height: 400px;
+    gap: 16px;
+    margin: 0 0 16px 0;
+    max-height: 300px;
     overflow-y: auto;
+    padding: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    flex-shrink: 1;
+}
+
+.staff-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.staff-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.staff-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
 }
 
 .staff-card {
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius);
+    padding: 16px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    background: white;
+    transition: var(--transition);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
     position: relative;
+    color: white;
 }
 
 .staff-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
 }
 
 .staff-card.selected {
-    border-color: #007bff;
-    background: #f8f9ff;
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.2);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
 }
 
 .staff-card.available {
-    border-left: 4px solid #28a745;
+    border-left: 4px solid var(--success);
 }
 
 .staff-card.busy {
-    border-left: 4px solid #ffc107;
+    border-left: 4px solid var(--warning);
     opacity: 0.7;
     cursor: not-allowed;
 }
 
 .staff-card.offline {
-    border-left: 4px solid #6c757d;
+    border-left: 4px solid var(--gray-500);
     opacity: 0.5;
     cursor: not-allowed;
 }
 
 .staff-status {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 12px;
+    right: 12px;
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    border: 2px solid white;
+    border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
 .staff-status.online {
-    background: #28a745;
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
 }
 
 .staff-status.busy {
-    background: #ffc107;
+    background: var(--warning);
+    box-shadow: 0 0 8px var(--warning);
 }
 
 .staff-status.offline {
-    background: #6c757d;
+    background: var(--gray-500);
 }
 
 .staff-name {
-    font-weight: bold;
-    font-size: 16px;
-    margin-bottom: 5px;
-    color: #333;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: white;
 }
 
 .staff-rating {
-    color: #f39c12;
-    margin-bottom: 5px;
+    color: #fbbf24;
+    margin-bottom: 6px;
+    font-weight: 600;
 }
 
 .staff-pricing {
-    color: #007bff;
-    font-weight: 500;
-    margin-bottom: 5px;
+    color: #60a5fa;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 16px;
 }
 
 .staff-status-text {
     font-size: 12px;
     text-transform: uppercase;
-    font-weight: bold;
+    font-weight: 700;
     margin-top: 8px;
+    letter-spacing: 0.5px;
 }
 
 .staff-status-text.available {
-    color: #28a745;
+    color: var(--success);
 }
 
 .staff-status-text.busy {
-    color: #ffc107;
+    color: var(--warning);
 }
 
 .staff-status-text.offline {
-    color: #6c757d;
+    color: var(--gray-400);
 }
 
 .selected-staff-info {
-    background: #f8f9ff;
-    border: 1px solid #007bff;
-    border-radius: 8px;
-    padding: 15px;
-    margin-top: 15px;
+    background: rgba(99, 102, 241, 0.15);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    backdrop-filter: blur(10px);
+    color: white;
+    flex-shrink: 0;
+    animation: slideDown 0.3s ease-out;
 }
 
-.selected-staff-info h4 {
-    margin: 0 0 10px 0;
-    color: #007bff;
+.selected-staff-info:not(.hidden) {
+    scroll-margin-bottom: 20px;
 }
 
-/* Utility classes */
-.hidden {
-    display: none !important;
+.selected-info-item {
+    margin: 8px 0;
+    font-size: 14px;
 }
 
+.selected-info-item strong {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Status Messages */
 .status {
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 4px;
-    font-weight: bold;
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+    animation: slideDown 0.3s ease-out;
 }
 
 .status.success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    color: var(--success-dark);
+    border: 2px solid var(--success);
 }
 
 .status.error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: var(--danger-dark);
+    border: 2px solid var(--danger);
+}
+
+/* Form Elements */
+input {
+    padding: 12px 16px;
+    margin: 5px 0;
+    width: 100%;
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius);
+    font-size: 15px;
+    transition: var(--transition);
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile Optimization - Touch Targets and Base Styles */
+button, select {
+    min-height: 44px; /* iOS recommended touch target size */
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+button:active {
+    opacity: 0.8;
+}
+
+/* Prevent text selection on buttons during touch */
+.btn, button {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Responsive Design - Tablet and Below */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+        background-attachment: fixed;
+    }
+
+    .container {
+        max-width: 100%;
+    }
+
+    .section {
+        padding: 20px 16px;
+        margin-bottom: 16px;
+    }
+
+    .login-section {
+        margin: 20px auto;
+        max-width: 100%;
+    }
+
+    .login-header {
+        margin-bottom: 24px;
+    }
+
+    .login-header h1 {
+        font-size: 32px;
+        margin-bottom: 6px;
+    }
+
+    .login-subtitle {
+        font-size: 14px;
+    }
+
+    .login-form {
+        gap: 12px;
+    }
+
+    .user-select {
+        padding: 16px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    .btn-login {
+        padding: 18px;
+        font-size: 17px; /* Better readability on mobile */
+    }
+
+    .video-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .video-container {
+        min-height: 280px;
+        aspect-ratio: 16 / 9;
+        border-width: 2px;
+    }
+
+    .video-label {
+        font-size: 12px;
+        padding: 6px 12px;
+        top: 12px;
+        left: 12px;
+    }
+
+    .call-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .call-info-item {
+        width: 100%;
+    }
+
+    .call-info-label {
+        font-size: 12px;
+    }
+
+    .call-info-value {
+        font-size: 22px;
+    }
+
+    .call-status-bar {
+        padding: 14px;
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+
+    .controls {
+        padding: 12px;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .media-controls {
+        justify-content: space-around;
+    }
+
+    .btn-icon {
+        width: auto;
+        min-width: 100px;
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+
+    .btn-icon-text {
+        font-size: 16px;
+    }
+
+    .call-buttons {
+        flex-direction: row;
+        gap: 10px;
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .btn-call {
+        flex: 1;
+        min-width: 120px;
+        padding: 16px;
+        font-size: 16px;
+    }
+
+    .staff-selection {
+        margin-bottom: 16px;
+    }
+
+    .staff-selection-title {
+        font-size: 18px;
+        margin-bottom: 12px;
+    }
+
+    .staff-selection {
+        max-height: calc(100% - 70px);
+    }
+
+    .staff-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        max-height: 250px;
+        margin: 0 0 12px 0;
+    }
+
+    .staff-card {
+        padding: 14px;
+    }
+
+    .selected-staff-info {
+        padding: 14px;
+        margin-top: 12px;
+    }
+
+    .status {
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+}
+
+/* Mobile - Small Screens */
+@media (max-width: 480px) {
+    body {
+        padding: 8px;
+    }
+
+    .section {
+        padding: 16px 12px;
+        border-radius: 12px;
+    }
+
+    .login-section {
+        margin: 15px auto;
+        padding: 24px 20px;
+    }
+
+    .login-header h1 {
+        font-size: 28px;
+    }
+
+    .login-subtitle {
+        font-size: 13px;
+    }
+
+    .user-select {
+        padding: 14px;
+        font-size: 16px;
+    }
+
+    .video-container {
+        min-height: 220px;
+        border-radius: 10px;
+    }
+
+    .video-label {
+        font-size: 11px;
+        padding: 5px 10px;
+        top: 8px;
+        left: 8px;
+    }
+
+    .call-info {
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .call-info-value {
+        font-size: 20px;
+    }
+
+    .call-status-bar {
+        padding: 12px;
+        font-size: 13px;
+    }
+
+    .controls {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .btn-icon {
+        min-width: 90px;
+        padding: 12px 14px;
+        font-size: 13px;
+    }
+
+    .btn-icon-text {
+        font-size: 14px;
+        margin-right: 4px;
+    }
+
+    .call-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-call {
+        width: 100%;
+        padding: 18px;
+        font-size: 17px;
+    }
+
+    .staff-selection {
+        max-height: calc(100% - 60px);
+    }
+
+    .staff-grid {
+        max-height: 200px;
+    }
+
+    .selected-staff-info {
+        padding: 12px;
+        margin-top: 6px;
+        margin-bottom: 6px;
+    }
+
+    .staff-card {
+        padding: 12px;
+    }
+
+    .staff-name {
+        font-size: 16px;
+    }
+
+    .selected-staff-info {
+        padding: 12px;
+    }
+}
+
+/* Landscape Mobile Optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+    .login-section {
+        margin: 15px auto;
+        max-width: 500px;
+    }
+
+    .login-header h1 {
+        font-size: 28px;
+        margin-bottom: 4px;
+    }
+
+    .login-subtitle {
+        font-size: 13px;
+    }
+
+    .video-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .video-container {
+        min-height: 200px;
+    }
+
+    .call-info {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .call-info-item {
+        width: auto;
+    }
+}
+
+/* Extra Small Devices */
+@media (max-width: 360px) {
+    .login-header h1 {
+        font-size: 24px;
+    }
+
+    .video-container {
+        min-height: 200px;
+    }
+
+    .call-info-value {
+        font-size: 18px;
+    }
+
+    .btn-call {
+        font-size: 16px;
+        padding: 16px;
+    }
+}
+
+/* Prevent horizontal scroll on mobile */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Improve scrolling on iOS */
+.staff-grid {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Fix for iOS Safari viewport issues */
+@supports (-webkit-touch-callout: none) {
+    .video-container {
+        min-height: 50vh;
+    }
 }

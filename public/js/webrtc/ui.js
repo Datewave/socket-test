@@ -81,7 +81,16 @@ export function toggleMute(localStream) {
     
     const muteBtn = document.getElementById('muteBtn');
     if (muteBtn) {
-        muteBtn.textContent = audioTrack.enabled ? 'Mute' : 'Unmute';
+        const iconText = muteBtn.querySelector('.btn-icon-text');
+        const btnText = muteBtn.querySelector('.btn-text');
+        if (iconText) {
+            iconText.textContent = audioTrack.enabled ? '🔇' : '🔊';
+        }
+        if (btnText) {
+            btnText.textContent = audioTrack.enabled ? 'Mute' : 'Unmute';
+        } else {
+            muteBtn.textContent = audioTrack.enabled ? 'Mute' : 'Unmute';
+        }
     }
 }
 
@@ -102,7 +111,16 @@ export function toggleVideo(localStream) {
     
     const videoBtn = document.getElementById('videoBtn');
     if (videoBtn) {
-        videoBtn.textContent = videoTrack.enabled ? 'Video' : 'No Video';
+        const iconText = videoBtn.querySelector('.btn-icon-text');
+        const btnText = videoBtn.querySelector('.btn-text');
+        if (iconText) {
+            iconText.textContent = videoTrack.enabled ? '📹' : '📵';
+        }
+        if (btnText) {
+            btnText.textContent = videoTrack.enabled ? 'Video' : 'No Video';
+        } else {
+            videoBtn.textContent = videoTrack.enabled ? 'Video' : 'No Video';
+        }
     }
 }
 

@@ -354,6 +354,11 @@ function selectStaff(staff) {
     
     selectedStaffInfo.classList.remove('hidden');
     
+    // Scroll selected info into view to ensure it's fully visible
+    setTimeout(() => {
+        selectedStaffInfo.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    }, 100);
+    
     console.log('📋 Selected staff:', staff.name, 'ID:', staff.id);
 }
 
