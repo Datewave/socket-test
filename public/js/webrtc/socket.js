@@ -354,10 +354,20 @@ function selectStaff(staff) {
     
     selectedStaffInfo.classList.remove('hidden');
     
-    // Scroll selected info into view to ensure it's fully visible
+    // Add class to staff selection to reduce grid height
+    const staffSelection = document.getElementById('staffSelection');
+    if (staffSelection) {
+        staffSelection.classList.add('has-selected');
+    }
+    
+    // Ensure call buttons are visible (they're now always visible at bottom)
+    // Just scroll the content area if needed
     setTimeout(() => {
-        selectedStaffInfo.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-    }, 100);
+        const controlsContent = document.querySelector('.controls-content');
+        if (controlsContent) {
+            controlsContent.scrollTop = controlsContent.scrollHeight;
+        }
+    }, 150);
     
     console.log('📋 Selected staff:', staff.name, 'ID:', staff.id);
 }

@@ -129,4 +129,14 @@ export function resetUI() {
     document.getElementById('callCost').textContent = '0';
     showCallControls('idle');
     updateCallStatus('');
+    
+    // Reset staff selection state
+    const staffSelection = document.getElementById('staffSelection');
+    const selectedStaffInfo = document.getElementById('selectedStaffInfo');
+    if (staffSelection) {
+        staffSelection.classList.remove('has-selected');
+    }
+    if (selectedStaffInfo) {
+        selectedStaffInfo.classList.add('hidden');
+    }
 }

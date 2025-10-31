@@ -316,7 +316,44 @@ video {
     border: 3px solid var(--success);
 }
 
-/* Controls */
+/* Controls Wrapper - Fixed structure for mobile */
+.controls-wrapper {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    max-height: 85%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.7));
+    backdrop-filter: blur(10px);
+}
+
+.controls-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px 16px 0 16px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.controls-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.controls-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.controls-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+/* Legacy controls class for media controls */
 .controls {
     position: absolute;
     bottom: 0;
@@ -326,27 +363,9 @@ video {
     background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.5));
     backdrop-filter: blur(10px);
     display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 12px;
     z-index: 10;
-    max-height: 90%;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-}
-
-.controls::-webkit-scrollbar {
-    width: 6px;
-}
-
-.controls::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.controls::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
 }
 
 .media-controls {
@@ -359,17 +378,21 @@ video {
     gap: 12px;
     flex-wrap: wrap;
     justify-content: center;
+    flex-shrink: 0;
+    padding: 16px;
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.95);
+    position: sticky;
+    bottom: 0;
 }
 
 /* Staff Selection */
 .staff-selection {
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 0;
     text-align: left;
-    max-height: calc(100% - 80px);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
 }
 
 .staff-selection-title {
@@ -392,6 +415,23 @@ video {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
     flex-shrink: 1;
+}
+
+/* Reduce staff grid height when staff is selected to make room for buttons */
+.staff-selection.has-selected .staff-grid {
+    max-height: 200px;
+}
+
+@media (max-width: 768px) {
+    .staff-selection.has-selected .staff-grid {
+        max-height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .staff-selection.has-selected .staff-grid {
+        max-height: 120px;
+    }
 }
 
 .staff-grid::-webkit-scrollbar {
@@ -682,8 +722,21 @@ button:active {
 
     .video-container {
         min-height: 280px;
+        max-height: 60vh;
         aspect-ratio: 16 / 9;
         border-width: 2px;
+    }
+    
+    .controls-wrapper {
+        max-height: 50vh;
+    }
+    
+    .controls-content {
+        padding: 12px 12px 0 12px;
+    }
+    
+    .call-buttons {
+        padding: 12px;
     }
 
     .video-label {
@@ -740,17 +793,15 @@ button:active {
     }
 
     .call-buttons {
-        flex-direction: row;
+        flex-direction: column;
         gap: 10px;
         width: 100%;
-        flex-wrap: wrap;
     }
 
     .btn-call {
-        flex: 1;
-        min-width: 120px;
-        padding: 16px;
-        font-size: 16px;
+        width: 100%;
+        padding: 18px;
+        font-size: 17px;
     }
 
     .staff-selection {
@@ -762,15 +813,33 @@ button:active {
         margin-bottom: 12px;
     }
 
+    .controls-wrapper {
+        max-height: 50vh;
+    }
+    
+    .controls-content {
+        padding: 12px 12px 0 12px;
+    }
+
     .staff-selection {
-        max-height: calc(100% - 70px);
+        margin-bottom: 0;
+        min-height: 0;
     }
 
     .staff-grid {
         grid-template-columns: 1fr;
         gap: 12px;
-        max-height: 250px;
+        max-height: 200px;
         margin: 0 0 12px 0;
+    }
+
+    .selected-staff-info {
+        margin-bottom: 8px;
+    }
+
+    .call-buttons {
+        margin-top: 8px;
+        padding-top: 8px;
     }
 
     .staff-card {
@@ -819,7 +888,16 @@ button:active {
 
     .video-container {
         min-height: 220px;
+        max-height: 50vh;
         border-radius: 10px;
+    }
+    
+    .controls-wrapper {
+        max-height: 45vh;
+    }
+    
+    .controls-content {
+        padding: 10px 10px 0 10px;
     }
 
     .video-label {
@@ -842,9 +920,9 @@ button:active {
         padding: 12px;
         font-size: 13px;
     }
-
-    .controls {
-        padding: 10px;
+    
+    .call-buttons {
+        padding: 12px;
         gap: 8px;
     }
 
@@ -870,18 +948,38 @@ button:active {
         font-size: 17px;
     }
 
+    .controls-wrapper {
+        max-height: 45vh;
+    }
+    
+    .controls-content {
+        padding: 10px 10px 0 10px;
+    }
+
     .staff-selection {
-        max-height: calc(100% - 60px);
+        margin-bottom: 0;
     }
 
     .staff-grid {
-        max-height: 200px;
+        max-height: 150px;
     }
 
     .selected-staff-info {
         padding: 12px;
         margin-top: 6px;
         margin-bottom: 6px;
+    }
+
+    .call-buttons {
+        margin-top: 6px;
+        padding-top: 6px;
+        gap: 8px;
+    }
+
+    .btn-call {
+        width: 100%;
+        padding: 18px;
+        font-size: 17px;
     }
 
     .staff-card {
