@@ -65,17 +65,45 @@ export function updateCallCost(cost) {
 }
 
 export function toggleMute(localStream) {
-    const audioTrack = localStream.getAudioTracks()[0];
+    if (!localStream) {
+        console.warn('⚠️ No local stream available for mute toggle');
+        return;
+    }
+    
+    const audioTracks = localStream.getAudioTracks();
+    if (audioTracks.length === 0) {
+        console.warn('⚠️ No audio tracks available');
+        return;
+    }
+    
+    const audioTrack = audioTracks[0];
     audioTrack.enabled = !audioTrack.enabled;
-    document.querySelector('button[onclick="toggleMute()"]').textContent = 
-        audioTrack.enabled ? 'Mute' : 'Unmute';
+    
+    const muteBtn = document.getElementById('muteBtn');
+    if (muteBtn) {
+        muteBtn.textContent = audioTrack.enabled ? 'Mute' : 'Unmute';
+    }
 }
 
 export function toggleVideo(localStream) {
-    const videoTrack = localStream.getVideoTracks()[0];
+    if (!localStream) {
+        console.warn('⚠️ No local stream available for video toggle');
+        return;
+    }
+    
+    const videoTracks = localStream.getVideoTracks();
+    if (videoTracks.length === 0) {
+        console.warn('⚠️ No video tracks available');
+        return;
+    }
+    
+    const videoTrack = videoTracks[0];
     videoTrack.enabled = !videoTrack.enabled;
-    document.querySelector('button[onclick="toggleVideo()"]').textContent = 
-        videoTrack.enabled ? 'Video' : 'No Video';
+    
+    const videoBtn = document.getElementById('videoBtn');
+    if (videoBtn) {
+        videoBtn.textContent = videoTrack.enabled ? 'Video' : 'No Video';
+    }
 }
 
 export function resetUI() {

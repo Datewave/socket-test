@@ -8,9 +8,9 @@ let isSocketConnected = false;
 let pingInterval = null;
 let statusInterval = null;
 let currentCallId = null;
-let bufferedIceCandidates = [];
 let pendingOffers = new Map();
 let pendingCandidates = new Map();
+let autoRejectTimeouts = new Map(); // Track auto-reject timeouts for cleanup
 
 export function initializeSocket() {
     const { token: userToken, role: userRole, id: userId } = getUserInfo();
@@ -407,6 +407,10 @@ export async function processPendingOfferDirectly(callId) {
     }
 }
 
+// Store handler references for proper cleanup
+let staffDataHandler = null;
+let staffUpdateHandler = null;
+
 export async function fetchAvailableStaff() {
     if (!socket || !isSocketConnected) {
         showStatus('Socket not connected. Reconnecting...', true);
@@ -414,11 +418,15 @@ export async function fetchAvailableStaff() {
     }
 
     // Remove any existing listeners to prevent duplicates
-    socket.off('staff-data');
-    socket.off('staff-update');
+    if (staffDataHandler) {
+        socket.off('staff-data', staffDataHandler);
+    }
+    if (staffUpdateHandler) {
+        socket.off('staff-update', staffUpdateHandler);
+    }
 
-    // Listen for staff data response
-    socket.on('staff-data', (response) => {        
+    // Define handlers
+    staffDataHandler = (response) => {        
         const staffGrid = document.getElementById('staffGrid');
         const staffSelection = document.getElementById('staffSelection');
         
@@ -443,10 +451,9 @@ export async function fetchAvailableStaff() {
         } else {
             showStatus('No staff data available', true);
         }
-    });
+    };
 
-    // Listen for staff updates
-    socket.on('staff-update', (update) => {
+    staffUpdateHandler = (update) => {
         console.log('📊 Staff update received:', update);
         
         if (update.type === 'staff-status-change' || 
@@ -455,12 +462,30 @@ export async function fetchAvailableStaff() {
             // Refresh the staff list to show updated status
             socket.emit('get-staff');
         }
-    });
+    };
+
+    // Listen for staff data response and updates
+    socket.on('staff-data', staffDataHandler);
+    socket.on('staff-update', staffUpdateHandler);
 
     // Subscribe to staff updates and get initial list
     socket.emit('subscribe-staff-updates');
     socket.emit('get-staff');
     showStatus('Fetching staff list...', false);
+}
+
+// Cleanup function for staff listeners
+export function cleanupStaffListeners() {
+    if (socket) {
+        if (staffDataHandler) {
+            socket.off('staff-data', staffDataHandler);
+            staffDataHandler = null;
+        }
+        if (staffUpdateHandler) {
+            socket.off('staff-update', staffUpdateHandler);
+            staffUpdateHandler = null;
+        }
+    }
 }
 
 // Socket event handlers
@@ -482,7 +507,7 @@ function handleCallInitiated(data) {
     showStatus('Call initiated', false);
 }
 
-function handleCallAccepted(data) {
+async function handleCallAccepted(data) {
     // CRITICAL: Set the current call ID for the user side
     currentCallId = data.callId;
     
@@ -490,9 +515,14 @@ function handleCallAccepted(data) {
     const candidates = pendingCandidates.get(data.callId) || [];
     if (candidates.length > 0) {
         console.log(`Processing ${candidates.length} pending ICE candidates after call acceptance`);
-        candidates.forEach(async (candidate) => {
-            await handleIceCandidate(candidate);
-        });
+        // Fix: Use for...of loop to properly await each candidate
+        for (const candidate of candidates) {
+            try {
+                await handleIceCandidate(candidate);
+            } catch (error) {
+                console.error('Error processing pending ICE candidate:', error);
+            }
+        }
         pendingCandidates.delete(data.callId);
     }
     
@@ -585,12 +615,21 @@ async function handleIncomingCall(data) {
         document.getElementById('endCallBtn')?.classList.add('hidden');
         
         // Auto-reject after 60 seconds
-        setTimeout(() => {
+        const autoRejectTimeout = setTimeout(() => {
             const currentCall = getCurrentCall();
             if (currentCall && currentCall.id === data.callId && currentCall.status === 'INCOMING') {
-                rejectCall();
+                console.log('⏰ Auto-rejecting call after 60 seconds');
+                handleCallRejected({
+                    callId: data.callId,
+                    rejectedByName: 'System',
+                    reason: 'Call timeout - no response'
+                });
             }
+            autoRejectTimeouts.delete(data.callId);
         }, 60000);
+        
+        // Store timeout for cleanup
+        autoRejectTimeouts.set(data.callId, autoRejectTimeout);
         
         return true;
     } catch (error) {
@@ -607,16 +646,32 @@ function handleStaffUnavailable(data) {
 }
 
 function resetCall() {
-    cleanupWebRTC();
-    setCurrentCall(null);
-    stopCallTimer();
-    resetUI();
-
-    // Leave call room if socket is connected
+    // Get current call before clearing it
     const currentCall = getCurrentCall();
+    
+    // Clear auto-reject timeout if exists
+    if (currentCallId && autoRejectTimeouts.has(currentCallId)) {
+        clearTimeout(autoRejectTimeouts.get(currentCallId));
+        autoRejectTimeouts.delete(currentCallId);
+    }
+    
+    // Leave call room if socket is connected
     if (socket && socket.connected && currentCall) {
         socket.emit('leave-call', { callId: currentCall.id });
     }
+    
+    // Clean up pending data for this call
+    if (currentCallId) {
+        pendingOffers.delete(currentCallId);
+        pendingCandidates.delete(currentCallId);
+    }
+    
+    // Clean up WebRTC and UI
+    cleanupWebRTC();
+    setCurrentCall(null);
+    currentCallId = null;
+    stopCallTimer();
+    resetUI();
 }
 
 export function emitCallStart(callId, states) {

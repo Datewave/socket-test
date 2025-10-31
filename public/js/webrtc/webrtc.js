@@ -152,6 +152,20 @@ export async function createPeerConnection() {
     // Add local stream if available
     if (localStream) {
         console.log('🔵 AUDIO DEBUG: Adding local tracks to peer connection...');
+        const tracks = localStream.getTracks();
+        
+        if (tracks.length === 0) {
+            console.error('❌ CRITICAL: Local stream has NO tracks!');
+            console.log('🔄 Attempting to reinitialize media...');
+            try {
+                await initializeMedia();
+                const newTracks = localStream.getTracks();
+                console.log(`✅ Reinitialized media, now have ${newTracks.length} tracks`);
+            } catch (error) {
+                console.error('❌ Failed to reinitialize media:', error);
+            }
+        }
+        
         localStream.getTracks().forEach((track, index) => {
             console.log(`🎤 Adding local track ${index}:`, {
                 kind: track.kind,
@@ -160,6 +174,14 @@ export async function createPeerConnection() {
                 readyState: track.readyState,
                 label: track.label
             });
+            
+            // CRITICAL FIX: Ensure track is enabled before adding
+            if (track.readyState === 'ended') {
+                console.error(`❌ Track ${index} is ENDED! Cannot add to peer connection`);
+                return;
+            }
+            
+            track.enabled = true; // Force enable
             const sender = peerConnection.addTrack(track, localStream);
             console.log('📤 Track sender created:', sender);
         });
@@ -175,8 +197,14 @@ export async function createPeerConnection() {
                     enabled: sender.track.enabled,
                     readyState: sender.track.readyState
                 });
+            } else {
+                console.warn(`⚠️ Sender ${index} has NO track!`);
             }
         });
+        
+        if (senders.length === 0) {
+            console.error('❌ CRITICAL: No senders were added to peer connection!');
+        }
     } else {
         console.warn('⚠️ No local stream available when creating peer connection');
     }
@@ -883,10 +911,37 @@ export async function acceptCall() {
             console.log('📤 process-pending-offer emitted successfully');
         }
         
-        // Ensure we have media access before accepting call
+        // CRITICAL: Ensure we have media access BEFORE accepting call
         if (!localStream) {
             console.log('🎤 Initializing media for call acceptance...');
             await initializeMedia();
+        }
+        
+        // Verify we actually have tracks
+        if (localStream) {
+            const tracks = localStream.getTracks();
+            console.log(`🔍 Local stream has ${tracks.length} tracks before accepting call`);
+            if (tracks.length === 0) {
+                console.error('❌ CRITICAL: Local stream has NO tracks after initialization!');
+                showStatus('Microphone/camera access failed. Please check permissions.', true);
+                return;
+            }
+            
+            // Verify tracks are active
+            tracks.forEach((track, index) => {
+                console.log(`🎤 Track ${index} (${track.kind}):`, {
+                    enabled: track.enabled,
+                    readyState: track.readyState,
+                    muted: track.muted
+                });
+                if (track.readyState === 'ended') {
+                    console.error(`❌ Track ${index} is ENDED!`);
+                }
+            });
+        } else {
+            console.error('❌ CRITICAL: No local stream after initialization!');
+            showStatus('Failed to access microphone/camera', true);
+            return;
         }
         
         // Check if we have a peer connection and remote description

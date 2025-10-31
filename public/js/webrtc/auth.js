@@ -15,7 +15,16 @@ export function getUserInfo() {
 
 export async function handleLogin() {
     const userType = document.getElementById('userType').value;
-    const phone = userType === 'staff' ? '+919876543221' : '+919876543210';
+    
+    // Map user type to phone number
+    const phoneMap = {
+        'user1': '+919876543210',
+        'user2': '+919876543271',
+        'staff1': '+919876543220',
+        'staff2': '+919876543221'
+    };
+    
+    const phone = phoneMap[userType] || '+919876543210';
     
     try {
         // First request OTP
@@ -60,10 +69,14 @@ export async function handleLogin() {
                 console.log('Token data:', tokenData);
                 // Use the role from the token as it's more authoritative
                 userRole = tokenData.role;
-                // If we're staff, use the staffId as our userId
+                
+                // Fix: Keep userId as the User model ID (not Staff model ID)
+                // The backend expects staffUserId to be the User ID, not the Staff ID
+                // userId should always be the User._id regardless of role
+                console.log('User ID (User model):', userId);
                 if (tokenData.isStaff && tokenData.staffId) {
-                    userId = tokenData.staffId;
-                    console.log('Using staff ID as primary ID:', userId);
+                    console.log('Staff ID (Staff model):', tokenData.staffId);
+                    console.log('Note: Using User ID for socket authentication, Staff ID is for reference only');
                 }
             } catch (e) {
                 console.error('Error parsing token:', e);
